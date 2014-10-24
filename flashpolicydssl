@@ -7,11 +7,14 @@ use warnings;
 
 use IO::Select;
 use IO::Socket;
+use IO::Socket::SSL;
 use Getopt::Long;
 use English '-no_match_vars';
 
 # file and port are optional on the command line.
 my $file = '';
+my $cert_file = '';
+my $key_file = '';
 my $port = 843;
 my $timeout = 3;
 my $debug = 0;
@@ -36,6 +39,8 @@ END
 
 GetOptions(
     'f|file=s' => \$file,
+    'cert_file=s' => \$cert_file,
+    'key_file=s' => \$key_file,
     'p|port=s' => \$port,
     'd|debug!' => \$debug,
     'pidfile=s'=> \$pidfile,
@@ -52,11 +57,13 @@ if ($file) {
     $data .= $_ while (<DATA>);
 }
 
-my $listen = new IO::Socket::INET(
+my $listen = new IO::Socket::SSL(
     Listen => 2048,
     LocalPort => $port,
     Timeout => $timeout,
-    Reuse => 1
+    Reuse => 1,
+    SSL_cert_file => $cert_file,
+    SSL_key_file => $key_file
 ) or die $!;
 
 # Drop privileges.
